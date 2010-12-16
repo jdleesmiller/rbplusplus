@@ -67,7 +67,8 @@ module RbPlusPlus
         :cxxflags => [],
         :ldflags => [],
         :include_source_files => [],
-        :includes => []
+        :includes => [],
+        :make_flags => []
       }
 
       @node = nil
@@ -102,6 +103,7 @@ module RbPlusPlus
     # * <tt>:include_source_dir</tt> - A combination option for reducing duplication, this option will 
     #   query the given directory for source files, adding all to <tt>:include_source_files</tt> and 
     #   adding all h/hpp files to <tt>:includes</tt> 
+    # * <tt>:make_flags</tt> - Array of flags to be passed to make (e.g. ['-j4'] to run four jobs at once (parallel build)).
     #
     def sources(dirs, options = {})
       parser_options = {}
@@ -153,6 +155,10 @@ module RbPlusPlus
       end
 
       @options[:includes] += [*dirs]
+
+      if (flags = options.delete(:make_flags))
+        @options[:make_flags].push(*flags)
+      end
 
       @sources = Dir.glob dirs
       Logger.info "Parsing #{@sources.inspect}"
@@ -236,7 +242,8 @@ module RbPlusPlus
       FileUtils.cd @working_dir do
         system("#{ruby} extconf.rb > rbpp_compile.log 2>&1")
         system("rm -f *.so")
-        system("make >> rbpp_compile.log 2>&1")
+        system("make #{@options[:make_flags].join(' ')}"\
+               " >>rbpp_compile.log 2>&1")
       end
       Logger.info "Compilation complete."
     end
