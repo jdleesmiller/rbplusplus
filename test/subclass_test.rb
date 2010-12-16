@@ -4,7 +4,7 @@ describe "Extension with class hierachies" do
 
   specify "should make super classes methods available" do
     Extension.new "subclass" do |e|
-      e.sources full_dir("headers/subclass.h")
+      e.sources full_dir("headers/subclass.h"), :make_flags => %w(-j2)
 
       node = e.namespace "subclass"
       node.classes("SuperSuper").ignore
